@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>訂便當｜給力盒子</title>
+  <link rel="stylesheet" href="tailwind 1.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #fef9f0 0%, #fff7ed 100%);
+      min-height: 100vh;
+    }
+    .menu-card {
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+    .menu-card:hover {
+      border-color: #f97316;
+      box-shadow: 0 4px 20px rgba(249,115,22,0.15);
+      transform: translateY(-2px);
+    }
+    .menu-card.selected {
+      border-color: #f97316;
+      background: #fff7ed;
+    }
+    .qty-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      user-select: none;
+    }
+    .qty-btn:hover {
+      background: #f97316;
+      color: white;
+    }
+    .qty-input {
+      width: 48px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      background: transparent;
+      color: #1f2937;
+    }
+    .qty-input:focus {
+      outline: none;
+    }
+    .submit-btn {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(249,115,22,0.4);
+    }
+    .submit-btn:hover {
+      background: linear-gradient(135deg, #ea580c, #c2410c);
+      box-shadow: 0 8px 30px rgba(249,115,22,0.5);
+      transform: translateY(-2px);
+    }
+    .rice-option input[type="radio"]:checked + label {
+      background: #f97316;
+      color: white;
+      border-color: #f97316;
+    }
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .price-tag {
+      background: linear-gradient(135deg, #fff7ed, #ffedd5);
+      border: 1px solid #fdba74;
+      color: #ea580c;
+    }
+    .category-fish { border-left: 4px solid #3b82f6; }
+    .category-chicken { border-left: 4px solid #22c55e; }
+    .category-pork { border-left: 4px solid #f59e0b; }
+    .category-beef { border-left: 4px solid #ef4444; }
+    .category-veg { border-left: 4px solid #10b981; }
+    .sticky-bar {
+      position: sticky;
+      bottom: 0;
+      background: white;
+      border-top: 1px solid #fed7aa;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="bg-white shadow-md">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="index.html" class="text-orange-500 hover:text-orange-600 mr-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </a>
+        <span class="text-3xl">🥡</span>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">給力盒子</h1>
+          <p class="text-sm text-gray-500">選擇您的便當</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-sm text-gray-400">2026 年 3 月菜單</p>
+        <p class="text-orange-500 font-semibold text-sm" id="header-total">已選：$0</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-6 py-8 pb-40">
+
+    <!-- 訂購人資訊 -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+        <span class="mr-2">👤</span> 訂購人資訊
+      </h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">訂購人姓名 <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            id="orderer-name"
+            placeholder="請輸入姓名"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400"
+          >
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">特殊需求（選填）</label>
+          <input
+            type="text"
+            id="special-request"
+            placeholder="例如：不要香菜、少辣..."
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- 飯量選擇 -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+        <span class="mr-2">🍚</span> 飯量選擇
+      </h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-normal" value="正常飯" class="hidden">
+          <label for="rice-normal" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">
+            🍚 正常飯
+          </label>
+        </div>
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-half" value="半飯" class="hidden">
+          <label for="rice-half" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">
+            🌾 半飯
+          </label>
+        </div>
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-none" value="無飯" class="hidden">
+          <label for="rice-none" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">
+            🥗 無飯
+          </label>
+        </div>
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-sweet-potato" value="飯換地瓜" class="hidden">
+          <label for="rice-sweet-potato" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">
+            🍠 飯換地瓜
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 菜單列表 -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+        <span class="mr-2">🍱</span> 選擇餐點
+      </h2>
+
+      <!-- 海鮮類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> 海鮮類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="清蒸鱸魚" data-price="140">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">清蒸鱸魚</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$140</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="鹽烤鯖魚" data-price="130">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">鹽烤鯖魚</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$130</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="大厚切烤鮭魚" data-price="220">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">大厚切烤鮭魚</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$220</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 雞肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span> 雞肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="椒鹽水煮雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">椒鹽水煮雞胸</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="塔香火烤雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">塔香火烤雞胸</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="泰式打拋雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">泰式打拋雞胸</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="南加州烤雞腿" data-price="135">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">南加州烤雞腿</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$135</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="南加州火烤雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">南加州火烤雞胸</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 豬肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-yellow-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span> 豬肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-pork" data-name="蒜泥醬豬肉片" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">蒜泥醬豬肉片</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-pork" data-name="韓式泡菜豬肉片" data-price="130">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">韓式泡菜豬肉片</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$130</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 牛肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-red-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span> 牛肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-beef" data-name="十三香滷牛腱" data-price="160">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">十三香滷牛腱</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$160</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 蔬菜類 -->
+      <div class="mb-2">
+        <h3 class="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span> 蔬菜類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-veg" data-name="西西里烤蔬菜" data-price="110">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg">西西里烤蔬菜</p>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$110</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, -1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600 hover:text-white" onclick="changeQty(this, 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 底部固定欄 -->
+  <div class="sticky-bar">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div>
+        <p class="text-gray-500 text-sm">總計金額</p>
+        <p class="text-3xl font-extrabold text-orange-500">$<span id="total-price">0</span></p>
+      </div>
+      <button
+        class="submit-btn text-white text-lg font-bold px-10 py-4 rounded-full inline-flex items-center space-x-2"
+        onclick="submitOrder()"
+      >
+        <span>確認訂單</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 訂單確認 Modal -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box">
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-3">🎉</div>
+        <h2 class="text-2xl font-extrabold text-gray-800">訂單確認</h2>
+        <p class="text-gray-400 text-sm mt-1">感謝您的訂購！</p>
+      </div>
+
+      <!-- 訂購人 -->
+      <div class="bg-gray-50 rounded-xl p-4 mb-4">
+        <p class="text-sm text-gray-500 mb-1">訂購人</p>
+        <p class="font-bold text-gray-800 text-lg" id="modal-name">—</p>
+        <p class="text-sm text-gray-400 mt-1" id="modal-special">—</p>
+      </div>
+
+      <!-- 飯量 -->
+      <div class="bg-orange-50 rounded-xl p-4 mb-4">
+        <p class="text-sm text-gray-500 mb-1">飯量</p>
+        <p class="font-bold text-orange-600 text-lg" id="modal-rice">—</p>
+      </div>
+
+      <!-- 餐點明細 -->
+      <div class="mb-4">
+        <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">餐點明細</p>
+        <div id="modal-items" class="space-y-2"></div>
+      </div>
+
+      <!-- 總計 -->
+      <div class="border-t-2 border-orange-200 pt-4 flex items-center justify-between">
+        <span class="font-bold text-gray-700 text-lg">總計</span>
+        <span class="text-3xl font-extrabold text-orange-500">$<span id="modal-total">0</span></span>
+      </div>
+
+      <button
+        class="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-colors"
+        onclick="closeModal()"
+      >
+        關閉
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 計算總金額
+    function updateTotal() {
+      let total = 0;
+      document.querySelectorAll('.menu-card').forEach(card => {
+        const qty = parseInt(card.querySelector('.qty-input').value) || 0;
+        const price = parseInt(card.dataset.price);
+        total += qty * price;
+
+        // 高亮已選擇的卡片
+        if (qty > 0) {
+          card.classList.add('selected');
+        } else {
+          card.classList.remove('selected');
+        }
+      });
+      document.getElementById('total-price').textContent = total;
+      document.getElementById('header-total').textContent = `已選：$${total}`;
+    }
+
+    // 調整數量
+    function changeQty(btn, delta) {
+      const container = btn.parentElement;
+      const input = container.querySelector('.qty-input');
+      let val = parseInt(input.value) || 0;
+      val = Math.max(0, Math.min(20, val + delta));
+      input.value = val;
+      updateTotal();
+    }
+
+    // 提交訂單
+    function submitOrder() {
+      const name = document.getElementById('orderer-name').value.trim();
+      if (!name) {
+        document.getElementById('orderer-name').classList.add('ring-2', 'ring-red-400');
+        document.getElementById('orderer-name').focus();
+        document.getElementById('orderer-name').placeholder = '⚠ 請輸入姓名';
+        return;
+      }
+      document.getElementById('orderer-name').classList.remove('ring-2', 'ring-red-400');
+
+      const rice = document.querySelector('input[name="rice"]:checked');
+      if (!rice) {
+        alert('請選擇飯量！');
+        return;
+      }
+
+      const items = [];
+      let total = 0;
+      document.querySelectorAll('.menu-card').forEach(card => {
+        const qty = parseInt(card.querySelector('.qty-input').value) || 0;
+        if (qty > 0) {
+          const name = card.dataset.name;
+          const price = parseInt(card.dataset.price);
+          items.push({ name, qty, price, subtotal: qty * price });
+          total += qty * price;
+        }
+      });
+
+      if (items.length === 0) {
+        alert('請至少選擇一道餐點！');
+        return;
+      }
+
+      const special = document.getElementById('special-request').value.trim();
+
+      // 填入 Modal
+      document.getElementById('modal-name').textContent = name;
+      document.getElementById('modal-special').textContent = special ? `特殊需求：${special}` : '無特殊需求';
+      document.getElementById('modal-rice').textContent = rice.value;
+      document.getElementById('modal-total').textContent = total;
+
+      const itemsEl = document.getElementById('modal-items');
+      itemsEl.innerHTML = '';
+      items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2';
+        row.innerHTML = `
+          <div>
+            <span class="font-semibold text-gray-800">${item.name}</span>
+            <span class="text-gray-400 text-sm ml-2">× ${item.qty}</span>
+          </div>
+          <span class="font-bold text-gray-700">$${item.subtotal}</span>
+        `;
+        itemsEl.appendChild(row);
+      });
+
+      document.getElementById('confirm-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('confirm-modal').classList.remove('active');
+    }
+
+    // 點選 modal 背景關閉
+    document.getElementById('confirm-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+
+</body>
+</html>

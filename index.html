@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>給力盒子｜訂便當系統</title>
+  <link rel="stylesheet" href="tailwind 1.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #fef9f0 0%, #fff7ed 100%);
+      min-height: 100vh;
+    }
+    .hero-image { box-shadow: 0 20px 60px rgba(0,0,0,0.15); transition: transform 0.3s ease; }
+    .hero-image:hover { transform: scale(1.01); }
+    .order-btn {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(249,115,22,0.4);
+    }
+    .order-btn:hover {
+      background: linear-gradient(135deg, #ea580c, #c2410c);
+      box-shadow: 0 8px 30px rgba(249,115,22,0.5);
+      transform: translateY(-2px);
+    }
+    .order-btn:active { transform: translateY(0); }
+    .stats-btn {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+    }
+    .stats-btn:hover {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      box-shadow: 0 8px 30px rgba(99,102,241,0.45);
+      transform: translateY(-2px);
+    }
+    .badge { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+    /* 訂單頁 */
+    .menu-card { transition: all 0.2s ease; border: 2px solid transparent; }
+    .menu-card:hover { border-color:#f97316; box-shadow:0 4px 20px rgba(249,115,22,.15); transform:translateY(-2px); }
+    .menu-card.selected { border-color:#f97316; background:#fff7ed; }
+    .qty-btn {
+      width:36px; height:36px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px; font-weight:bold; cursor:pointer;
+      transition:background .2s; user-select:none;
+    }
+    .qty-btn:hover { background:#f97316; color:white; }
+    .qty-input { width:48px; text-align:center; font-size:18px; font-weight:bold; border:none; background:transparent; color:#1f2937; }
+    .qty-input:focus { outline:none; }
+    .submit-btn {
+      background: linear-gradient(135deg,#f97316,#ea580c);
+      transition:all .3s ease;
+      box-shadow:0 4px 20px rgba(249,115,22,.4);
+    }
+    .submit-btn:hover { background:linear-gradient(135deg,#ea580c,#c2410c); box-shadow:0 8px 30px rgba(249,115,22,.5); transform:translateY(-2px); }
+    .rice-option input[type="radio"]:checked + label { background:#f97316; color:white; border-color:#f97316; }
+    .price-tag { background:linear-gradient(135deg,#fff7ed,#ffedd5); border:1px solid #fdba74; color:#ea580c; }
+    .category-fish    { border-left:4px solid #3b82f6; }
+    .category-chicken { border-left:4px solid #22c55e; }
+    .category-pork    { border-left:4px solid #f59e0b; }
+    .category-beef    { border-left:4px solid #ef4444; }
+    .category-veg     { border-left:4px solid #10b981; }
+    .sticky-bar { position:sticky; bottom:0; background:white; border-top:1px solid #fed7aa; box-shadow:0 -4px 20px rgba(0,0,0,.08); }
+
+    /* Modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; align-items:center; justify-content:center; }
+    .modal-overlay.active { display:flex; }
+    .modal-box { background:white; border-radius:1.5rem; padding:2.5rem; max-width:500px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 25px 60px rgba(0,0,0,.2); animation:slideUp .3s ease; }
+    @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    /* View 切換 */
+    .view { display:none; }
+    .view.active { display:block; }
+    .view.fade-in { animation:fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* 統計頁 */
+    .order-row { transition:background .15s; }
+    .order-row:hover { background:#fff7ed; }
+    .dish-bar-bg { background:#fed7aa; border-radius:9999px; height:10px; overflow:hidden; }
+    .dish-bar-fill { background:linear-gradient(90deg,#f97316,#ea580c); height:100%; border-radius:9999px; transition:width .6s ease; }
+    .tab-btn { transition:all .2s; }
+    .tab-btn.active { background:#f97316; color:white; box-shadow:0 2px 8px rgba(249,115,22,.35); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ Header ══════════ -->
+<header class="bg-white shadow-md sticky top-0 z-40">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <button id="btn-back" onclick="goBack()" class="hidden text-orange-500 hover:text-orange-600 mr-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="text-3xl">🥡</span>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">給力盒子</h1>
+        <p class="text-sm text-gray-500" id="header-subtitle">健康美味的便當選擇</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-3">
+      <p class="text-orange-500 font-semibold text-sm hidden" id="header-total">已選：$0</p>
+      <span id="home-badge" class="hidden"></span>
+      <!-- 統計頁的訂單數 badge -->
+      <span id="order-count-badge" class="hidden bg-indigo-100 text-indigo-700 text-sm font-semibold px-3 py-1 rounded-full">
+        共 <span id="badge-count">0</span> 筆訂單
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ 首頁 ══════════ -->
+<div id="view-home" class="view active fade-in">
+  <main class="max-w-5xl mx-auto px-6 py-10">
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-extrabold text-gray-800 mb-2">本月菜單</h2>
+      <p class="text-gray-500">點擊「立即訂便當」開始選購，或查看團體訂購統計</p>
+    </div>
+
+    <div class="rounded-2xl overflow-hidden hero-image mb-10 border border-orange-100">
+      <img src="getpower.jpg" alt="給力盒子菜單" class="w-full object-contain bg-white">
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <button onclick="showOrder()"
+        class="order-btn text-white text-xl font-bold px-14 py-5 rounded-full inline-flex items-center space-x-3">
+        <span class="text-2xl">🛒</span><span>立即訂便當</span>
+      </button>
+      <button onclick="showSummary()"
+        class="stats-btn text-white text-xl font-bold px-14 py-5 rounded-full inline-flex items-center space-x-3">
+        <span class="text-2xl">📊</span><span>查看訂購統計</span>
+      </button>
+    </div>
+    <p class="text-center text-gray-400 text-sm mt-4" id="home-order-hint">目前尚未有人訂餐</p>
+  </main>
+  <footer class="text-center py-8 text-gray-400 text-sm">
+    <p>© 2026 給力盒子 · 健康均衡每一餐</p>
+  </footer>
+
+  <!-- Created by -->
+  <div style="position:fixed;bottom:14px;right:18px;font-size:11px;color:#d1d5db;letter-spacing:.05em;pointer-events:none;z-index:999;">
+    Created by Stanley
+  </div>
+</div>
+
+<!-- ══════════ 訂單頁 ══════════ -->
+<div id="view-order" class="view">
+  <main class="max-w-5xl mx-auto px-6 py-8 pb-40">
+
+    <!-- 訂購人資訊 -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="mr-2">👤</span>訂購人資訊</h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">訂購人姓名 <span class="text-red-500">*</span></label>
+          <input type="text" id="orderer-name" placeholder="請輸入姓名"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">特殊需求（選填）</label>
+          <input type="text" id="special-request" placeholder="例如：不要香菜、少辣..."
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400">
+        </div>
+      </div>
+    </div>
+
+    <!-- 飯量選擇 -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="mr-2">🍚</span>飯量選擇</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-normal" value="正常飯" class="hidden">
+          <label for="rice-normal" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🍚 正常飯</label>
+        </div>
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-half" value="半飯" class="hidden">
+          <label for="rice-half" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🌾 半飯</label>
+        </div>
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-none" value="無飯" class="hidden">
+          <label for="rice-none" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🥗 無飯</label>
+        </div>
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-sweet-potato" value="飯換地瓜" class="hidden">
+          <label for="rice-sweet-potato" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🍠 飯換地瓜</label>
+        </div>
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-vegan" value="全素" class="hidden">
+          <label for="rice-vegan" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🌿 全素</label>
+        </div>
+        <div class="rice-option">
+          <input type="radio" name="rice" id="rice-lacto-ovo" value="蛋奶素" class="hidden">
+          <label for="rice-lacto-ovo" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🥚 蛋奶素</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 菜單列表 -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center"><span class="mr-2">🍱</span>選擇餐點</h2>
+
+      <!-- 海鮮類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>海鮮類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="樹子汁蒸鱸魚" data-price="140">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">樹子汁蒸鱸魚</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$140</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="鹽烤鯖魚" data-price="130">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">鹽烤鯖魚</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$130</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="大厚切烤鮭魚" data-price="220">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">大厚切烤鮭魚</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$220</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 雞肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>雞肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="椒鹽水煮雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">椒鹽水煮雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="塔香火烤雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">塔香火烤雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="泰式打拋雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">泰式打拋雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="南加州烤雞腿" data-price="135">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">南加州烤雞腿</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$135</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 豬肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-yellow-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>豬肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-pork" data-name="蒜泥醬豬肉片" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">蒜泥醬豬肉片</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-pork" data-name="韓式泡菜豬肉片" data-price="130">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">韓式泡菜豬肉片</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$130</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 牛肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-red-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>牛肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-beef" data-name="十三香滷牛腱" data-price="160">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">十三香滷牛腱</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$160</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 蔬菜類 -->
+      <div class="mb-2">
+        <h3 class="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>蔬菜類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-veg" data-name="西西里烤蔬菜" data-price="110">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">西西里烤蔬菜</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$110</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 底部固定欄 -->
+  <div class="sticky-bar">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div>
+        <p class="text-gray-500 text-sm">總計金額</p>
+        <p class="text-3xl font-extrabold text-orange-500">$<span id="total-price">0</span></p>
+      </div>
+      <button class="submit-btn text-white text-lg font-bold px-10 py-4 rounded-full inline-flex items-center space-x-2" onclick="submitOrder()">
+        <span>送出訂單</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 統計頁 ══════════ -->
+<div id="view-summary" class="view">
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <!-- 總覽卡片 -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-2xl p-5 shadow-sm text-center">
+        <p class="text-3xl font-extrabold text-orange-500" id="stat-boxes">0</p>
+        <p class="text-gray-500 text-sm mt-1">便當總數</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm text-center">
+        <p class="text-3xl font-extrabold text-orange-500">$<span id="stat-total">0</span></p>
+        <p class="text-gray-500 text-sm mt-1">總金額</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm text-center">
+        <p class="text-3xl font-extrabold text-orange-500">$<span id="stat-avg">0</span></p>
+        <p class="text-gray-500 text-sm mt-1">平均每人</p>
+      </div>
+    </div>
+
+    <!-- Tab 切換 -->
+    <div class="flex flex-wrap gap-3 mb-6">
+      <button id="tab-orders" class="tab-btn active px-6 py-2 rounded-full font-semibold text-sm border-2 border-orange-300" onclick="switchTab('orders')">個人訂單</button>
+      <button id="tab-dishes" class="tab-btn px-6 py-2 rounded-full font-semibold text-sm border-2 border-gray-200 text-gray-500" onclick="switchTab('dishes')">餐點統計</button>
+      <button id="tab-rice" class="tab-btn px-6 py-2 rounded-full font-semibold text-sm border-2 border-gray-200 text-gray-500" onclick="switchTab('rice')">飯量統計</button>
+    </div>
+
+    <!-- Tab: 個人訂單（依餐點分組） -->
+    <div id="panel-orders">
+      <div id="orders-list" class="space-y-4"></div>
+      <div id="orders-empty" class="hidden text-center py-20 text-gray-400">
+        <div class="text-6xl mb-4">📭</div>
+        <p class="text-xl font-semibold">尚無訂單紀錄</p>
+        <p class="text-sm mt-2">請先讓大家透過「立即訂便當」填寫訂單</p>
+      </div>
+    </div>
+
+    <!-- Tab: 餐點統計 -->
+    <div id="panel-dishes" class="hidden">
+      <div class="bg-white rounded-2xl shadow-sm p-6">
+        <h3 class="font-bold text-gray-700 mb-6">各餐點訂購數量排行</h3>
+        <div id="dishes-list" class="space-y-4"></div>
+      </div>
+    </div>
+
+    <!-- Tab: 飯量統計 -->
+    <div id="panel-rice" class="hidden">
+      <div class="bg-white rounded-2xl shadow-sm p-6">
+        <h3 class="font-bold text-gray-700 mb-6">飯量選擇分佈</h3>
+        <div id="rice-list" class="space-y-4"></div>
+      </div>
+    </div>
+
+    <!-- 清除全部訂單 -->
+    <div class="mt-10 text-center">
+      <button onclick="clearAllOrders()"
+        class="border-2 border-red-300 text-red-400 hover:bg-red-50 font-semibold px-8 py-3 rounded-full transition-colors text-sm">
+        🗑 清除所有訂單紀錄
+      </button>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════ 訂單成功 Modal ══════════ -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="text-center mb-6">
+      <div class="text-5xl mb-3">🎉</div>
+      <h2 class="text-2xl font-extrabold text-gray-800">訂單已送出！</h2>
+      <p class="text-gray-400 text-sm mt-1">您的訂單已成功記錄</p>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-4 mb-4">
+      <p class="text-sm text-gray-500 mb-1">訂購人</p>
+      <p class="font-bold text-gray-800 text-lg" id="modal-name">—</p>
+      <p class="text-sm text-gray-400 mt-1" id="modal-special">—</p>
+    </div>
+    <div class="bg-orange-50 rounded-xl p-4 mb-4">
+      <p class="text-sm text-gray-500 mb-1">飯量</p>
+      <p class="font-bold text-orange-600 text-lg" id="modal-rice">—</p>
+    </div>
+    <div class="mb-4">
+      <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">餐點明細</p>
+      <div id="modal-items" class="space-y-2"></div>
+    </div>
+    <div class="border-t-2 border-orange-200 pt-4 flex items-center justify-between mb-6">
+      <span class="font-bold text-gray-700 text-lg">總計</span>
+      <span class="text-3xl font-extrabold text-orange-500">$<span id="modal-total">0</span></span>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="closeModalAndOrder()" class="border-2 border-orange-400 text-orange-500 font-bold py-3 rounded-xl hover:bg-orange-50 transition-colors">
+        繼續訂餐
+      </button>
+      <button onclick="closeModalAndSummary()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-colors">
+        查看統計
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── 資料層：localStorage ──
+  const STORAGE_KEY = 'lunchbox_orders_2026_03';
+
+  function loadOrders() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveOrders(orders) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+  }
+
+  // ── View 切換 ──
+  let prevView = 'home';
+
+  function switchView(to) {
+    ['home','order','summary'].forEach(v => {
+      document.getElementById('view-'+v).classList.remove('active','fade-in');
+    });
+    const el = document.getElementById('view-'+to);
+    el.classList.add('active','fade-in');
+    el.addEventListener('animationend', () => el.classList.remove('fade-in'), { once:true });
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  function showOrder() {
+    prevView = 'home';
+    resetForm();
+    switchView('order');
+    document.getElementById('btn-back').classList.remove('hidden');
+    document.getElementById('header-total').classList.remove('hidden');
+    document.getElementById('home-badge').classList.add('hidden');
+    document.getElementById('order-count-badge').classList.add('hidden');
+    document.getElementById('header-subtitle').textContent = '選擇您的便當';
+  }
+
+  function showSummary() {
+    prevView = 'home';
+    renderSummary();
+    switchView('summary');
+    document.getElementById('btn-back').classList.remove('hidden');
+    document.getElementById('header-total').classList.add('hidden');
+    document.getElementById('home-badge').classList.add('hidden');
+    const orders = loadOrders();
+    document.getElementById('order-count-badge').classList.remove('hidden');
+    document.getElementById('badge-count').textContent = orders.length;
+    document.getElementById('header-subtitle').textContent = '訂購統計';
+  }
+
+  function goBack() {
+    switchView('home');
+    document.getElementById('btn-back').classList.add('hidden');
+    document.getElementById('header-total').classList.add('hidden');
+    document.getElementById('home-badge').classList.remove('hidden');
+    document.getElementById('order-count-badge').classList.add('hidden');
+    document.getElementById('header-subtitle').textContent = '健康美味的便當選擇';
+    updateHomeHint();
+  }
+
+  // ── 訂單頁邏輯 ──
+  function updateTotal() {
+    let total = 0;
+    document.querySelectorAll('.menu-card').forEach(card => {
+      const qty = parseInt(card.querySelector('.qty-input').value) || 0;
+      total += qty * parseInt(card.dataset.price);
+      card.classList.toggle('selected', qty > 0);
+    });
+    document.getElementById('total-price').textContent = total;
+    document.getElementById('header-total').textContent = `已選：$${total}`;
+  }
+
+  function changeQty(btn, delta) {
+    const input = btn.parentElement.querySelector('.qty-input');
+    input.value = Math.max(0, Math.min(20, (parseInt(input.value)||0) + delta));
+    updateTotal();
+  }
+
+  function resetForm() {
+    document.getElementById('orderer-name').value = '';
+    document.getElementById('special-request').value = '';
+    document.querySelectorAll('input[name="rice"]').forEach(r => r.checked = false);
+    document.querySelectorAll('.qty-input').forEach(i => i.value = 0);
+    document.querySelectorAll('.menu-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('total-price').textContent = '0';
+    document.getElementById('header-total').textContent = '已選：$0';
+  }
+
+  function submitOrder() {
+    const nameEl = document.getElementById('orderer-name');
+    const name = nameEl.value.trim();
+    if (!name) {
+      nameEl.classList.add('ring-2','ring-red-400');
+      nameEl.placeholder = '⚠ 請輸入姓名';
+      nameEl.focus();
+      return;
+    }
+    nameEl.classList.remove('ring-2','ring-red-400');
+
+    const rice = document.querySelector('input[name="rice"]:checked');
+    if (!rice) { alert('請選擇飯量！'); return; }
+
+    const items = [];
+    let total = 0;
+    document.querySelectorAll('.menu-card').forEach(card => {
+      const qty = parseInt(card.querySelector('.qty-input').value) || 0;
+      if (qty > 0) {
+        const price = parseInt(card.dataset.price);
+        items.push({ name: card.dataset.name, qty, price, subtotal: qty * price });
+        total += qty * price;
+      }
+    });
+    if (items.length === 0) { alert('請至少選擇一道餐點！'); return; }
+
+    const special = document.getElementById('special-request').value.trim();
+
+    // 儲存到 localStorage
+    const orders = loadOrders();
+    orders.push({
+      id: Date.now(),
+      name, rice: rice.value, special, items, total,
+      time: new Date().toLocaleString('zh-TW')
+    });
+    saveOrders(orders);
+
+    // 填入 Modal
+    document.getElementById('modal-name').textContent = name;
+    document.getElementById('modal-special').textContent = special ? `特殊需求：${special}` : '無特殊需求';
+    document.getElementById('modal-rice').textContent = rice.value;
+    document.getElementById('modal-total').textContent = total;
+    const itemsEl = document.getElementById('modal-items');
+    itemsEl.innerHTML = '';
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2';
+      row.innerHTML = `<div><span class="font-semibold text-gray-800">${item.name}</span><span class="text-gray-400 text-sm ml-2">× ${item.qty}</span></div><span class="font-bold text-gray-700">$${item.subtotal}</span>`;
+      itemsEl.appendChild(row);
+    });
+
+    document.getElementById('confirm-modal').classList.add('active');
+  }
+
+  function closeModalAndOrder() {
+    document.getElementById('confirm-modal').classList.remove('active');
+    resetForm();
+  }
+
+  function closeModalAndSummary() {
+    document.getElementById('confirm-modal').classList.remove('active');
+    showSummary();
+  }
+
+  document.getElementById('confirm-modal').addEventListener('click', function(e) {
+    if (e.target === this) { document.getElementById('confirm-modal').classList.remove('active'); }
+  });
+
+  // ── 統計頁邏輯 ──
+  function renderSummary() {
+    const orders = loadOrders();
+
+    // 總覽數字
+    const totalBoxes = orders.reduce((s,o) => s + o.items.reduce((ss,i) => ss+i.qty, 0), 0);
+    const totalAmt   = orders.reduce((s,o) => s + o.total, 0);
+    document.getElementById('stat-boxes').textContent  = totalBoxes;
+    document.getElementById('stat-total').textContent  = totalAmt;
+    document.getElementById('stat-avg').textContent    = orders.length ? Math.round(totalAmt/orders.length) : 0;
+
+    // 個人訂單列表（依餐點分組）
+    const listEl = document.getElementById('orders-list');
+    const emptyEl = document.getElementById('orders-empty');
+    listEl.innerHTML = '';
+    if (orders.length === 0) {
+      emptyEl.classList.remove('hidden');
+    } else {
+      emptyEl.classList.add('hidden');
+      // 建立 dish → [{ name, qty, rice, special, id }] 對應表
+      const dishGroupMap = {};
+      orders.forEach(order => {
+        order.items.forEach(item => {
+          if (!dishGroupMap[item.name]) dishGroupMap[item.name] = [];
+          dishGroupMap[item.name].push({ personName: order.name, qty: item.qty, rice: order.rice, special: order.special, orderId: order.id });
+        });
+      });
+      // 依餐點排序（訂購人數多的排前面）
+      const sortedDishes = Object.entries(dishGroupMap).sort((a,b) => {
+        const totalA = a[1].reduce((s,r) => s+r.qty, 0);
+        const totalB = b[1].reduce((s,r) => s+r.qty, 0);
+        return totalB - totalA;
+      });
+      sortedDishes.forEach(([dishName, rows]) => {
+        const totalQty = rows.reduce((s,r) => s+r.qty, 0);
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl shadow-sm p-5';
+        const rowsHtml = rows.map(r => `
+          <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">${r.personName}</span>
+              <span class="bg-orange-100 text-orange-600 text-xs font-semibold px-2 py-0.5 rounded-full">${r.rice}</span>
+              ${r.special ? `<span class="bg-blue-50 text-blue-500 text-xs px-2 py-0.5 rounded-full">${r.special}</span>` : ''}
+            </div>
+            <span class="font-bold text-gray-500 text-sm">× ${r.qty}</span>
+          </div>`).join('');
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-extrabold text-gray-800 text-lg">${dishName}</h3>
+            <span class="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full">共 ${totalQty} 份</span>
+          </div>
+          <div>${rowsHtml}</div>`;
+        listEl.appendChild(card);
+      });
+    }
+
+    // 餐點統計
+    const dishMap = {};
+    orders.forEach(o => o.items.forEach(i => {
+      dishMap[i.name] = (dishMap[i.name] || 0) + i.qty;
+    }));
+    const dishArr = Object.entries(dishMap).sort((a,b) => b[1]-a[1]);
+    const maxDish = dishArr[0]?.[1] || 1;
+    const dishesEl = document.getElementById('dishes-list');
+    dishesEl.innerHTML = '';
+    if (dishArr.length === 0) {
+      dishesEl.innerHTML = '<p class="text-gray-400 text-center py-8">尚無資料</p>';
+    } else {
+      dishArr.forEach(([name, qty]) => {
+        const row = document.createElement('div');
+        row.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-semibold text-gray-800">${name}</span>
+            <span class="font-bold text-orange-500">${qty} 份</span>
+          </div>
+          <div class="dish-bar-bg"><div class="dish-bar-fill" style="width:${Math.round(qty/maxDish*100)}%"></div></div>
+        `;
+        dishesEl.appendChild(row);
+      });
+    }
+
+    // 飯量統計
+    const riceMap = { '正常飯':0, '半飯':0, '無飯':0, '飯換地瓜':0, '全素':0, '蛋奶素':0 };
+    orders.forEach(o => { if (riceMap[o.rice] !== undefined) riceMap[o.rice]++; });
+    const riceColors = { '正常飯':'#f97316', '半飯':'#22c55e', '無飯':'#6366f1', '飯換地瓜':'#f59e0b', '全素':'#10b981', '蛋奶素':'#ec4899' };
+    const riceIcons  = { '正常飯':'🍚', '半飯':'🌾', '無飯':'🥗', '飯換地瓜':'🍠', '全素':'🌿', '蛋奶素':'🥚' };
+    const riceEl = document.getElementById('rice-list');
+    riceEl.innerHTML = '';
+    const total = orders.length || 1;
+    Object.entries(riceMap).forEach(([label, cnt]) => {
+      const pct = Math.round(cnt/total*100);
+      const row = document.createElement('div');
+      row.innerHTML = `
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-semibold text-gray-800">${riceIcons[label]} ${label}</span>
+          <span class="font-bold text-gray-600">${cnt} 人 <span class="text-gray-400 font-normal">(${pct}%)</span></span>
+        </div>
+        <div class="dish-bar-bg">
+          <div class="dish-bar-fill" style="width:${pct}%;background:${riceColors[label]}"></div>
+        </div>
+      `;
+      riceEl.appendChild(row);
+    });
+
+  }
+
+  function switchTab(tab) {
+    ['orders','dishes','rice'].forEach(t => {
+      document.getElementById('tab-'+t).classList.remove('active');
+      document.getElementById('tab-'+t).classList.add('text-gray-500','border-gray-200');
+      document.getElementById('panel-'+t).classList.add('hidden');
+    });
+    document.getElementById('tab-'+tab).classList.add('active');
+    document.getElementById('tab-'+tab).classList.remove('text-gray-500','border-gray-200');
+    document.getElementById('panel-'+tab).classList.remove('hidden');
+  }
+
+  function deleteOrder(id) {
+    if (!confirm('確定要刪除這筆訂單嗎？')) return;
+    const orders = loadOrders().filter(o => o.id !== id);
+    saveOrders(orders);
+    renderSummary();
+    document.getElementById('badge-count').textContent = orders.length;
+  }
+
+  function clearAllOrders() {
+    if (!confirm('確定要清除所有訂單紀錄嗎？此操作無法復原。')) return;
+    saveOrders([]);
+    renderSummary();
+    document.getElementById('badge-count').textContent = 0;
+  }
+
+  function updateHomeHint() {
+    const orders = loadOrders();
+    const hint = document.getElementById('home-order-hint');
+    if (orders.length === 0) {
+      hint.textContent = '目前尚未有人訂餐';
+    } else {
+      hint.textContent = `已有 ${orders.length} 人完成訂餐`;
+      hint.classList.add('text-indigo-500');
+      hint.classList.remove('text-gray-400');
+    }
+  }
+
+  // 初始化
+  updateHomeHint();
+</script>
+
+</body>
+</html>
