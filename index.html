@@ -86,6 +86,35 @@
     .dish-bar-fill { background:linear-gradient(90deg,#f97316,#ea580c); height:100%; border-radius:9999px; transition:width .6s ease; }
     .tab-btn { transition:all .2s; }
     .tab-btn.active { background:#f97316; color:white; box-shadow:0 2px 8px rgba(249,115,22,.35); }
+
+    /* 個人統計表格 */
+    .personal-table { border-collapse: collapse; width: 100%; font-size: 0.875rem; }
+    .personal-table th {
+      padding: 14px 20px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .personal-table td {
+      padding: 13px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    .personal-table tbody tr { transition: background 0.12s; }
+    .personal-table tbody tr:hover td { background: #f8fafc !important; }
+    .personal-table tbody tr:last-child td { border-bottom: none; }
+    .col-price-cell { background: #eef2ff; }
+    .personal-tag {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px;
+      padding: 3px 11px; margin: 2px 4px 2px 0;
+      font-size: 0.78rem; font-weight: 500; color: #334155; white-space: nowrap;
+    }
+    .tag-qty { color: #4f46e5; font-weight: 700; margin-left: 1px; }
+    .tag-special { color: #6366f1; font-size: 0.72rem; opacity: 0.9; }
   </style>
 </head>
 <body>
@@ -291,6 +320,26 @@
               </div>
             </div>
           </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="川味椒麻烤雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">川味椒麻烤雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="南加州火烤雞胸" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">南加州火烤雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -303,16 +352,6 @@
           <div class="menu-card bg-gray-50 rounded-xl p-4 category-pork" data-name="蒜泥醬豬肉片" data-price="125">
             <div class="flex items-center justify-between">
               <div class="flex-1"><p class="font-bold text-gray-800 text-lg">蒜泥醬豬肉片</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span></div>
-              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
-                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
-                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
-                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
-              </div>
-            </div>
-          </div>
-          <div class="menu-card bg-gray-50 rounded-xl p-4 category-pork" data-name="韓式泡菜豬肉片" data-price="130">
-            <div class="flex items-center justify-between">
-              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">韓式泡菜豬肉片</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$130</span></div>
               <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
                 <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
                 <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
@@ -402,13 +441,37 @@
 
     <!-- Tab 切換 -->
     <div class="flex flex-wrap gap-3 mb-6">
-      <button id="tab-orders" class="tab-btn active px-6 py-2 rounded-full font-semibold text-sm border-2 border-orange-300" onclick="switchTab('orders')">個人訂單</button>
+      <button id="tab-personal" class="tab-btn active px-6 py-2 rounded-full font-semibold text-sm border-2 border-orange-300" onclick="switchTab('personal')">訂購總表</button>
+      <button id="tab-orders" class="tab-btn px-6 py-2 rounded-full font-semibold text-sm border-2 border-gray-200 text-gray-500" onclick="switchTab('orders')">個人訂單</button>
       <button id="tab-dishes" class="tab-btn px-6 py-2 rounded-full font-semibold text-sm border-2 border-gray-200 text-gray-500" onclick="switchTab('dishes')">餐點統計</button>
-      <button id="tab-rice" class="tab-btn px-6 py-2 rounded-full font-semibold text-sm border-2 border-gray-200 text-gray-500" onclick="switchTab('rice')">飯量統計</button>
+    </div>
+
+    <!-- Tab: 訂購總表 -->
+    <div id="panel-personal">
+      <div class="rounded-2xl overflow-hidden shadow-md border border-gray-200">
+        <div class="overflow-x-auto">
+          <table class="personal-table w-full">
+            <thead>
+              <tr class="bg-slate-800">
+                <th class="text-slate-300 text-left" style="min-width:160px;">餐點名稱</th>
+                <th class="text-slate-300 text-center" style="min-width:72px;">數量</th>
+                <th class="text-indigo-300 text-center bg-slate-700" style="min-width:84px;">單價</th>
+                <th class="text-indigo-300 text-center bg-slate-700" style="min-width:84px;">總價</th>
+                <th class="text-slate-300 text-left" style="min-width:240px;">訂購人與特殊需求</th>
+              </tr>
+            </thead>
+            <tbody id="personal-list"></tbody>
+          </table>
+        </div>
+        <div id="personal-empty" class="hidden text-center py-16 text-gray-400 bg-white">
+          <div class="text-5xl mb-3">📭</div>
+          <p class="font-semibold">尚無訂單資料</p>
+        </div>
+      </div>
     </div>
 
     <!-- Tab: 個人訂單（依餐點分組） -->
-    <div id="panel-orders">
+    <div id="panel-orders" class="hidden">
       <div id="orders-list" class="space-y-4"></div>
       <div id="orders-empty" class="hidden text-center py-20 text-gray-400">
         <div class="text-6xl mb-4">📭</div>
@@ -422,14 +485,6 @@
       <div class="bg-white rounded-2xl shadow-sm p-6">
         <h3 class="font-bold text-gray-700 mb-6">各餐點訂購數量排行</h3>
         <div id="dishes-list" class="space-y-4"></div>
-      </div>
-    </div>
-
-    <!-- Tab: 飯量統計 -->
-    <div id="panel-rice" class="hidden">
-      <div class="bg-white rounded-2xl shadow-sm p-6">
-        <h3 class="font-bold text-gray-700 mb-6">飯量選擇分佈</h3>
-        <div id="rice-list" class="space-y-4"></div>
       </div>
     </div>
 
@@ -666,21 +721,22 @@
       emptyEl.classList.remove('hidden');
     } else {
       emptyEl.classList.add('hidden');
-      // 建立 dish → [{ name, qty, rice, special, id }] 對應表
+      // 建立 dish → { price, rows[] } 對應表
       const dishGroupMap = {};
       orders.forEach(order => {
         order.items.forEach(item => {
-          if (!dishGroupMap[item.name]) dishGroupMap[item.name] = [];
-          dishGroupMap[item.name].push({ personName: order.name, qty: item.qty, rice: order.rice, special: order.special, orderId: order.id, firebaseKey: order.firebaseKey });
+          if (!dishGroupMap[item.name]) dishGroupMap[item.name] = { price: item.price, rows: [] };
+          dishGroupMap[item.name].rows.push({ personName: order.name, qty: item.qty, rice: order.rice, special: order.special, orderId: order.id, firebaseKey: order.firebaseKey });
         });
       });
       // 依餐點排序（訂購人數多的排前面）
       const sortedDishes = Object.entries(dishGroupMap).sort((a,b) => {
-        const totalA = a[1].reduce((s,r) => s+r.qty, 0);
-        const totalB = b[1].reduce((s,r) => s+r.qty, 0);
+        const totalA = a[1].rows.reduce((s,r) => s+r.qty, 0);
+        const totalB = b[1].rows.reduce((s,r) => s+r.qty, 0);
         return totalB - totalA;
       });
-      sortedDishes.forEach(([dishName, rows]) => {
+      sortedDishes.forEach(([dishName, data]) => {
+        const { price, rows } = data;
         const totalQty = rows.reduce((s,r) => s+r.qty, 0);
         const card = document.createElement('div');
         card.className = 'bg-white rounded-2xl shadow-sm p-5';
@@ -698,7 +754,10 @@
           </div>`).join('');
         card.innerHTML = `
           <div class="flex items-center justify-between mb-3">
-            <h3 class="font-extrabold text-gray-800 text-lg">${dishName}</h3>
+            <div class="flex items-center gap-3">
+              <h3 class="font-extrabold text-gray-800 text-lg">${dishName}</h3>
+              <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">單價 $${price}</span>
+            </div>
             <span class="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full">共 ${totalQty} 份</span>
           </div>
           <div>${rowsHtml}</div>`;
@@ -731,33 +790,51 @@
       });
     }
 
-    // 飯量統計
-    const riceMap = { '正常飯':0, '半飯':0, '無飯':0, '飯換地瓜':0, '全素':0, '蛋奶素':0 };
-    orders.forEach(o => { if (riceMap[o.rice] !== undefined) riceMap[o.rice]++; });
-    const riceColors = { '正常飯':'#f97316', '半飯':'#22c55e', '無飯':'#6366f1', '飯換地瓜':'#f59e0b', '全素':'#10b981', '蛋奶素':'#ec4899' };
-    const riceIcons  = { '正常飯':'🍚', '半飯':'🌾', '無飯':'🥗', '飯換地瓜':'🍠', '全素':'🌿', '蛋奶素':'🥚' };
-    const riceEl = document.getElementById('rice-list');
-    riceEl.innerHTML = '';
-    const total = orders.length || 1;
-    Object.entries(riceMap).forEach(([label, cnt]) => {
-      const pct = Math.round(cnt/total*100);
-      const row = document.createElement('div');
-      row.innerHTML = `
-        <div class="flex items-center justify-between mb-1">
-          <span class="font-semibold text-gray-800">${riceIcons[label]} ${label}</span>
-          <span class="font-bold text-gray-600">${cnt} 人 <span class="text-gray-400 font-normal">(${pct}%)</span></span>
-        </div>
-        <div class="dish-bar-bg">
-          <div class="dish-bar-fill" style="width:${pct}%;background:${riceColors[label]}"></div>
-        </div>
-      `;
-      riceEl.appendChild(row);
-    });
+    // 訂購總表（表格形式）
+    const personalEl = document.getElementById('personal-list');
+    const personalEmptyEl = document.getElementById('personal-empty');
+    personalEl.innerHTML = '';
+    if (orders.length === 0) {
+      personalEmptyEl.classList.remove('hidden');
+    } else {
+      personalEmptyEl.classList.add('hidden');
+      // 建立 dish → { price, totalQty, totalAmt, orderers[] } 對應表
+      const personalDishMap = {};
+      orders.forEach(order => {
+        order.items.forEach(item => {
+          if (!personalDishMap[item.name]) {
+            personalDishMap[item.name] = { price: item.price, totalQty: 0, totalAmt: 0, orderers: [] };
+          }
+          personalDishMap[item.name].totalQty += item.qty;
+          personalDishMap[item.name].totalAmt += item.subtotal;
+          personalDishMap[item.name].orderers.push({ personName: order.name, qty: item.qty, special: order.special });
+        });
+      });
+      const sortedPersonal = Object.entries(personalDishMap).sort((a,b) => b[1].totalQty - a[1].totalQty);
+      sortedPersonal.forEach(([dishName, data], idx) => {
+        const tr = document.createElement('tr');
+        const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+        // 訂購人標籤
+        const tagsHtml = data.orderers.map(o => {
+          const qtyPart = o.qty > 1 ? `<span class="tag-qty">×${o.qty}</span>` : '';
+          const specialPart = o.special ? `<span class="tag-special">・${o.special}</span>` : '';
+          return `<span class="personal-tag">${o.personName}${qtyPart}${specialPart}</span>`;
+        }).join('');
+        tr.innerHTML = `
+          <td style="background:${rowBg};" class="font-semibold text-slate-700">${dishName}</td>
+          <td style="background:${rowBg};" class="text-center font-bold text-slate-600">${data.totalQty}</td>
+          <td class="text-center font-semibold text-indigo-600 col-price-cell">$${data.price}</td>
+          <td class="text-center font-extrabold text-indigo-700 col-price-cell">$${data.totalAmt}</td>
+          <td style="background:${rowBg};" class="text-slate-600">${tagsHtml}</td>
+        `;
+        personalEl.appendChild(tr);
+      });
+    }
 
   }
 
   function switchTab(tab) {
-    ['orders','dishes','rice'].forEach(t => {
+    ['personal','orders','dishes'].forEach(t => {
       document.getElementById('tab-'+t).classList.remove('active');
       document.getElementById('tab-'+t).classList.add('text-gray-500','border-gray-200');
       document.getElementById('panel-'+t).classList.add('hidden');
