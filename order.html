@@ -62,11 +62,12 @@
       box-shadow: 0 8px 30px rgba(249,115,22,0.5);
       transform: translateY(-2px);
     }
-    .rice-option input[type="radio"]:checked + label {
+    .rice-option input[type="checkbox"]:checked + label {
       background: #f97316;
       color: white;
       border-color: #f97316;
     }
+    .custom-req-dropdown label { transition: background 0.15s; }
     /* Modal */
     .modal-overlay {
       display: none;
@@ -156,14 +157,35 @@
             class="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400"
           >
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-600 mb-1">特殊需求（選填）</label>
-          <input
-            type="text"
-            id="special-request"
-            placeholder="例如：不要香菜、少辣..."
-            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400"
-          >
+        <div class="relative" id="custom-req-wrapper">
+          <label class="block text-sm font-medium text-gray-600 mb-1">客製需求（選填）</label>
+          <button type="button" id="custom-req-toggle" onclick="toggleCustomReq()"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-left bg-white focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 flex items-center justify-between">
+            <span id="custom-req-display" class="text-gray-400 text-sm">點擊選擇客製需求...</span>
+            <svg class="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div id="custom-req-dropdown" class="hidden absolute z-20 w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-lg p-3">
+            <label class="flex items-center gap-2 py-2 px-2 cursor-pointer hover:bg-gray-50 rounded-lg">
+              <input type="checkbox" name="custom-req" value="不要豆干" class="accent-orange-500 w-4 h-4" onchange="updateCustomReqDisplay()">
+              <span class="text-gray-700 text-sm">不要豆干</span>
+            </label>
+            <label class="flex items-center gap-2 py-2 px-2 cursor-pointer hover:bg-gray-50 rounded-lg">
+              <input type="checkbox" name="custom-req" value="不要海帶" class="accent-orange-500 w-4 h-4" onchange="updateCustomReqDisplay()">
+              <span class="text-gray-700 text-sm">不要海帶</span>
+            </label>
+            <label class="flex items-center gap-2 py-2 px-2 cursor-pointer hover:bg-gray-50 rounded-lg">
+              <input type="checkbox" name="custom-req" value="不要高麗菜" class="accent-orange-500 w-4 h-4" onchange="updateCustomReqDisplay()">
+              <span class="text-gray-700 text-sm">不要高麗菜</span>
+            </label>
+            <div class="border-t border-gray-100 mt-2 pt-2">
+              <p class="text-xs text-gray-400 px-2 mb-1">其他需求（選填）</p>
+              <input type="text" id="special-request" placeholder="例如：不要香菜、少辣..."
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                oninput="updateCustomReqDisplay()">
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -175,25 +197,25 @@
       </h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-normal" value="正常飯" class="hidden">
+          <input type="checkbox" name="rice" id="rice-normal" value="正常飯" class="hidden">
           <label for="rice-normal" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">
             🍚 正常飯
           </label>
         </div>
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-half" value="半飯" class="hidden">
+          <input type="checkbox" name="rice" id="rice-half" value="半飯" class="hidden">
           <label for="rice-half" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">
             🌾 半飯
           </label>
         </div>
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-none" value="無飯" class="hidden">
+          <input type="checkbox" name="rice" id="rice-none" value="無飯" class="hidden">
           <label for="rice-none" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">
             🥗 無飯
           </label>
         </div>
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-sweet-potato" value="飯換地瓜" class="hidden">
+          <input type="checkbox" name="rice" id="rice-sweet-potato" value="飯換地瓜" class="hidden">
           <label for="rice-sweet-potato" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">
             🍠 飯換地瓜
           </label>
@@ -514,11 +536,12 @@
       }
       document.getElementById('orderer-name').classList.remove('ring-2', 'ring-red-400');
 
-      const rice = document.querySelector('input[name="rice"]:checked');
-      if (!rice) {
+      const riceChecked = Array.from(document.querySelectorAll('input[name="rice"]:checked'));
+      if (riceChecked.length === 0) {
         alert('請選擇飯量！');
         return;
       }
+      const riceValue = riceChecked.map(r => r.value).join('、');
 
       const items = [];
       let total = 0;
@@ -537,12 +560,14 @@
         return;
       }
 
-      const special = document.getElementById('special-request').value.trim();
+      const checkedReqs = Array.from(document.querySelectorAll('input[name="custom-req"]:checked')).map(c => c.value);
+      const textReq = document.getElementById('special-request').value.trim();
+      const special = [...checkedReqs, ...(textReq ? [textReq] : [])].join('、');
 
       // 填入 Modal
       document.getElementById('modal-name').textContent = name;
-      document.getElementById('modal-special').textContent = special ? `特殊需求：${special}` : '無特殊需求';
-      document.getElementById('modal-rice').textContent = rice.value;
+      document.getElementById('modal-special').textContent = special ? `客製需求：${special}` : '無客製需求';
+      document.getElementById('modal-rice').textContent = riceValue;
       document.getElementById('modal-total').textContent = total;
 
       const itemsEl = document.getElementById('modal-items');
@@ -571,7 +596,33 @@
     document.getElementById('confirm-modal').addEventListener('click', function(e) {
       if (e.target === this) closeModal();
     });
-  </script>
+
+    // 客製需求下拉
+    function toggleCustomReq() {
+      document.getElementById('custom-req-dropdown').classList.toggle('hidden');
+    }
+
+    function updateCustomReqDisplay() {
+      const checked = Array.from(document.querySelectorAll('input[name="custom-req"]:checked')).map(c => c.value);
+      const text = document.getElementById('special-request').value.trim();
+      const all = [...checked, ...(text ? [text] : [])];
+      const display = document.getElementById('custom-req-display');
+      if (all.length === 0) {
+        display.textContent = '點擊選擇客製需求...';
+        display.className = 'text-gray-400 text-sm';
+      } else {
+        display.textContent = all.join('、');
+        display.className = 'text-gray-800 text-sm';
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      const wrapper = document.getElementById('custom-req-wrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('custom-req-dropdown').classList.add('hidden');
+      }
+    });
+</script>
 
 </body>
 </html>

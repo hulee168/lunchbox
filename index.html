@@ -58,7 +58,8 @@
       box-shadow:0 4px 20px rgba(249,115,22,.4);
     }
     .submit-btn:hover { background:linear-gradient(135deg,#ea580c,#c2410c); box-shadow:0 8px 30px rgba(249,115,22,.5); transform:translateY(-2px); }
-    .rice-option input[type="radio"]:checked + label { background:#f97316; color:white; border-color:#f97316; }
+    .rice-option input[type="checkbox"]:checked + label { background:#f97316; color:white; border-color:#f97316; }
+    .custom-req-dropdown label { transition: background 0.15s; }
     .price-tag { background:linear-gradient(135deg,#fff7ed,#ffedd5); border:1px solid #fdba74; color:#ea580c; }
     .category-fish    { border-left:4px solid #3b82f6; }
     .category-chicken { border-left:4px solid #22c55e; }
@@ -192,10 +193,35 @@
           <input type="text" id="orderer-name" placeholder="請輸入姓名"
             class="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400">
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-600 mb-1">特殊需求（選填）</label>
-          <input type="text" id="special-request" placeholder="例如：不要香菜、少辣..."
-            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400">
+        <div class="relative" id="custom-req-wrapper">
+          <label class="block text-sm font-medium text-gray-600 mb-1">客製需求（選填）</label>
+          <button type="button" id="custom-req-toggle" onclick="toggleCustomReq()"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-left bg-white focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 flex items-center justify-between">
+            <span id="custom-req-display" class="text-gray-400 text-sm">點擊選擇客製需求...</span>
+            <svg class="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div id="custom-req-dropdown" class="hidden absolute z-20 w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-lg p-3">
+            <label class="flex items-center gap-2 py-2 px-2 cursor-pointer hover:bg-gray-50 rounded-lg">
+              <input type="checkbox" name="custom-req" value="不要豆干" class="accent-orange-500 w-4 h-4" onchange="updateCustomReqDisplay()">
+              <span class="text-gray-700 text-sm">不要豆干</span>
+            </label>
+            <label class="flex items-center gap-2 py-2 px-2 cursor-pointer hover:bg-gray-50 rounded-lg">
+              <input type="checkbox" name="custom-req" value="不要海帶" class="accent-orange-500 w-4 h-4" onchange="updateCustomReqDisplay()">
+              <span class="text-gray-700 text-sm">不要海帶</span>
+            </label>
+            <label class="flex items-center gap-2 py-2 px-2 cursor-pointer hover:bg-gray-50 rounded-lg">
+              <input type="checkbox" name="custom-req" value="不要高麗菜" class="accent-orange-500 w-4 h-4" onchange="updateCustomReqDisplay()">
+              <span class="text-gray-700 text-sm">不要高麗菜</span>
+            </label>
+            <div class="border-t border-gray-100 mt-2 pt-2">
+              <p class="text-xs text-gray-400 px-2 mb-1">其他需求（選填）</p>
+              <input type="text" id="special-request" placeholder="例如：不要香菜、少辣..."
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                oninput="updateCustomReqDisplay()">
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -205,27 +231,27 @@
       <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="mr-2">🍚</span>飯量選擇</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-normal" value="正常飯" class="hidden">
+          <input type="checkbox" name="rice" id="rice-normal" value="正常飯" class="hidden">
           <label for="rice-normal" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🍚 正常飯</label>
         </div>
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-half" value="半飯" class="hidden">
+          <input type="checkbox" name="rice" id="rice-half" value="半飯" class="hidden">
           <label for="rice-half" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🌾 半飯</label>
         </div>
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-none" value="無飯" class="hidden">
+          <input type="checkbox" name="rice" id="rice-none" value="無飯" class="hidden">
           <label for="rice-none" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🥗 無飯</label>
         </div>
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-sweet-potato" value="飯換地瓜" class="hidden">
+          <input type="checkbox" name="rice" id="rice-sweet-potato" value="飯換地瓜" class="hidden">
           <label for="rice-sweet-potato" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🍠 飯換地瓜</label>
         </div>
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-vegan" value="全素" class="hidden">
+          <input type="checkbox" name="rice" id="rice-vegan" value="全素" class="hidden">
           <label for="rice-vegan" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🌿 全素</label>
         </div>
         <div class="rice-option">
-          <input type="radio" name="rice" id="rice-lacto-ovo" value="蛋奶素" class="hidden">
+          <input type="checkbox" name="rice" id="rice-lacto-ovo" value="蛋奶素" class="hidden">
           <label for="rice-lacto-ovo" class="block text-center border-2 border-gray-200 rounded-xl py-3 px-2 cursor-pointer font-semibold text-gray-600 hover:border-orange-400 hover:text-orange-500 transition-all">🥚 蛋奶素</label>
         </div>
       </div>
@@ -424,7 +450,7 @@
   <main class="max-w-5xl mx-auto px-6 py-8">
 
     <!-- 總覽卡片 -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
       <div class="bg-white rounded-2xl p-5 shadow-sm text-center">
         <p class="text-3xl font-extrabold text-orange-500" id="stat-boxes">0</p>
         <p class="text-gray-500 text-sm mt-1">便當總數</p>
@@ -432,10 +458,6 @@
       <div class="bg-white rounded-2xl p-5 shadow-sm text-center">
         <p class="text-3xl font-extrabold text-orange-500">$<span id="stat-total">0</span></p>
         <p class="text-gray-500 text-sm mt-1">總金額</p>
-      </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm text-center">
-        <p class="text-3xl font-extrabold text-orange-500">$<span id="stat-avg">0</span></p>
-        <p class="text-gray-500 text-sm mt-1">平均每人</p>
       </div>
     </div>
 
@@ -457,7 +479,7 @@
                 <th class="text-slate-300 text-center" style="min-width:72px;">數量</th>
                 <th class="text-indigo-300 text-center bg-slate-700" style="min-width:84px;">單價</th>
                 <th class="text-indigo-300 text-center bg-slate-700" style="min-width:84px;">總價</th>
-                <th class="text-slate-300 text-left" style="min-width:240px;">訂購人與特殊需求</th>
+                <th class="text-slate-300 text-left" style="min-width:240px;">訂購人與客製需求</th>
               </tr>
             </thead>
             <tbody id="personal-list"></tbody>
@@ -630,6 +652,8 @@
     document.getElementById('orderer-name').value = '';
     document.getElementById('special-request').value = '';
     document.querySelectorAll('input[name="rice"]').forEach(r => r.checked = false);
+    document.querySelectorAll('input[name="custom-req"]').forEach(c => c.checked = false);
+    updateCustomReqDisplay();
     document.querySelectorAll('.qty-input').forEach(i => i.value = 0);
     document.querySelectorAll('.menu-card').forEach(c => c.classList.remove('selected'));
     document.getElementById('total-price').textContent = '0';
@@ -647,8 +671,9 @@
     }
     nameEl.classList.remove('ring-2','ring-red-400');
 
-    const rice = document.querySelector('input[name="rice"]:checked');
-    if (!rice) { alert('請選擇飯量！'); return; }
+    const riceChecked = Array.from(document.querySelectorAll('input[name="rice"]:checked'));
+    if (riceChecked.length === 0) { alert('請選擇飯量！'); return; }
+    const riceValue = riceChecked.map(r => r.value).join('、');
 
     const items = [];
     let total = 0;
@@ -662,19 +687,21 @@
     });
     if (items.length === 0) { alert('請至少選擇一道餐點！'); return; }
 
-    const special = document.getElementById('special-request').value.trim();
+    const checkedReqs = Array.from(document.querySelectorAll('input[name="custom-req"]:checked')).map(c => c.value);
+    const textReq = document.getElementById('special-request').value.trim();
+    const special = [...checkedReqs, ...(textReq ? [textReq] : [])].join('、');
 
     // 儲存到 Firebase
     dbRef.push({
       id: Date.now(),
-      name, rice: rice.value, special, items, total,
+      name, rice: riceValue, special, items, total,
       time: new Date().toLocaleString('zh-TW')
     });
 
     // 填入 Modal
     document.getElementById('modal-name').textContent = name;
-    document.getElementById('modal-special').textContent = special ? `特殊需求：${special}` : '無特殊需求';
-    document.getElementById('modal-rice').textContent = rice.value;
+    document.getElementById('modal-special').textContent = special ? `客製需求：${special}` : '無客製需求';
+    document.getElementById('modal-rice').textContent = riceValue;
     document.getElementById('modal-total').textContent = total;
     const itemsEl = document.getElementById('modal-items');
     itemsEl.innerHTML = '';
@@ -711,7 +738,6 @@
     const totalAmt   = orders.reduce((s,o) => s + o.total, 0);
     document.getElementById('stat-boxes').textContent  = totalBoxes;
     document.getElementById('stat-total').textContent  = totalAmt;
-    document.getElementById('stat-avg').textContent    = orders.length ? Math.round(totalAmt/orders.length) : 0;
 
     // 個人訂單列表（依餐點分組）
     const listEl = document.getElementById('orders-list');
@@ -807,7 +833,7 @@
           }
           personalDishMap[item.name].totalQty += item.qty;
           personalDishMap[item.name].totalAmt += item.subtotal;
-          personalDishMap[item.name].orderers.push({ personName: order.name, qty: item.qty, special: order.special });
+          personalDishMap[item.name].orderers.push({ personName: order.name, qty: item.qty, rice: order.rice, special: order.special });
         });
       });
       const sortedPersonal = Object.entries(personalDishMap).sort((a,b) => b[1].totalQty - a[1].totalQty);
@@ -817,8 +843,9 @@
         // 訂購人標籤
         const tagsHtml = data.orderers.map(o => {
           const qtyPart = o.qty > 1 ? `<span class="tag-qty">×${o.qty}</span>` : '';
+          const ricePart = o.rice ? `<span class="tag-special">・${o.rice}</span>` : '';
           const specialPart = o.special ? `<span class="tag-special">・${o.special}</span>` : '';
-          return `<span class="personal-tag">${o.personName}${qtyPart}${specialPart}</span>`;
+          return `<span class="personal-tag">${o.personName}${qtyPart}${ricePart}${specialPart}</span>`;
         }).join('');
         tr.innerHTML = `
           <td style="background:${rowBg};" class="font-semibold text-slate-700">${dishName}</td>
@@ -855,6 +882,32 @@
     dbRef.remove();
     // onValue 監聽器會自動觸發 renderSummary
   }
+
+  // ── 客製需求下拉 ──
+  function toggleCustomReq() {
+    document.getElementById('custom-req-dropdown').classList.toggle('hidden');
+  }
+
+  function updateCustomReqDisplay() {
+    const checked = Array.from(document.querySelectorAll('input[name="custom-req"]:checked')).map(c => c.value);
+    const text = document.getElementById('special-request').value.trim();
+    const all = [...checked, ...(text ? [text] : [])];
+    const display = document.getElementById('custom-req-display');
+    if (all.length === 0) {
+      display.textContent = '點擊選擇客製需求...';
+      display.className = 'text-gray-400 text-sm';
+    } else {
+      display.textContent = all.join('、');
+      display.className = 'text-gray-800 text-sm';
+    }
+  }
+
+  document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('custom-req-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+      document.getElementById('custom-req-dropdown').classList.add('hidden');
+    }
+  });
 
   function updateHomeHint() {
     const hint = document.getElementById('home-order-hint');
