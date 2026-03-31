@@ -259,7 +259,7 @@
 
     <!-- 菜單列表 -->
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
-      <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center"><span class="mr-2">🍱</span>選擇餐點</h2>
+      <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center"><span class="mr-2">🍱</span>選擇餐盒</h2>
 
       <!-- 海鮮類 -->
       <div class="mb-6">
@@ -366,6 +366,22 @@
               </div>
             </div>
           </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="梅子燒雞腿(4月限定)" data-price="135">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="font-bold text-gray-800 text-lg">梅子燒雞腿</p>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 border border-orange-300">4月限定</span>
+                </div>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$135</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -416,6 +432,166 @@
           <div class="menu-card bg-gray-50 rounded-xl p-4 category-veg" data-name="西西里烤蔬菜" data-price="110">
             <div class="flex items-center justify-between">
               <div class="flex-1"><p class="font-bold text-gray-800 text-lg">西西里烤蔬菜</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$110</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 單點主菜 -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center"><span class="mr-2">🥩</span>單點主菜</h2>
+
+      <!-- 海鮮類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>海鮮類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="樹子汁蒸鱸魚(單點)" data-price="80">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">樹子汁蒸鱸魚</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$80</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="鹽烤鯖魚(單點)" data-price="70">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">鹽烤鯖魚</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$70</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-fish" data-name="大厚切烤鮭魚(單點)" data-price="160">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">大厚切烤鮭魚</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$160</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 雞肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>雞肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="椒鹽水煮雞胸(單點)" data-price="65">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">椒鹽水煮雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$65</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="塔香火烤雞胸(單點)" data-price="65">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">塔香火烤雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$65</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="泰式打拋雞胸(單點)" data-price="65">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">泰式打拋雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$65</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="南加州烤雞腿(單點)" data-price="75">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">南加州烤雞腿</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$75</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="南加州火烤雞胸(單點)" data-price="65">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">南加州火烤雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$65</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 豬肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-yellow-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>豬肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-pork" data-name="蒜泥醬豬肉片(單點)" data-price="65">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">蒜泥醬豬肉片</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$65</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 牛肉類 -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-red-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>牛肉類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-beef" data-name="十三香滷牛腱(單點)" data-price="100">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">十三香滷牛腱</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$100</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 蔬菜類 -->
+      <div class="mb-2">
+        <h3 class="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center">
+          <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>蔬菜類
+        </h3>
+        <div class="space-y-3">
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-veg" data-name="西西里烤蔬菜(單點)" data-price="50">
+            <div class="flex items-center justify-between">
+              <div class="flex-1"><p class="font-bold text-gray-800 text-lg">西西里烤蔬菜</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$50</span></div>
               <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
                 <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
                 <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
