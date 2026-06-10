@@ -835,7 +835,7 @@
   }
 
   function resetForm() {
-    document.getElementById('orderer-name').value = '';
+    document.getElementById('orderer-name').value = localStorage.getItem('lunchbox_orderer_name') || '';
     document.getElementById('special-request').value = '';
     document.querySelectorAll('input[name="rice"]').forEach(r => r.checked = false);
     document.querySelectorAll('input[name="custom-req"]').forEach(c => c.checked = false);
@@ -856,6 +856,7 @@
       return;
     }
     nameEl.classList.remove('ring-2','ring-red-400');
+    localStorage.setItem('lunchbox_orderer_name', name); // 記住姓名，下次自動帶入
 
     const riceChecked = Array.from(document.querySelectorAll('input[name="rice"]:checked'));
     if (riceChecked.length === 0) { alert('請選擇飯量！'); return; }
