@@ -842,10 +842,6 @@
     nameEl.classList.remove('ring-2','ring-red-400');
     localStorage.setItem('lunchbox_orderer_name', name); // 記住姓名，下次自動帶入
 
-    const riceChecked = Array.from(document.querySelectorAll('input[name="rice"]:checked'));
-    if (riceChecked.length === 0) { alert('請選擇飯量！'); return; }
-    const riceValue = riceChecked.map(r => r.value).join('、');
-
     const items = [];
     let total = 0;
     document.querySelectorAll('.menu-card').forEach(card => {
@@ -857,6 +853,12 @@
       }
     });
     if (items.length === 0) { alert('請至少選擇一道餐點！'); return; }
+
+    // 只有選了「選擇餐盒」（非單點）品項才需要飯量；純單點主菜不需要
+    const needsRice = items.some(item => !item.name.endsWith('(單點)'));
+    const riceChecked = Array.from(document.querySelectorAll('input[name="rice"]:checked'));
+    if (needsRice && riceChecked.length === 0) { alert('請選擇飯量！'); return; }
+    const riceValue = riceChecked.map(r => r.value).join('、');
 
     const checkedReqs = Array.from(document.querySelectorAll('input[name="custom-req"]:checked')).map(c => c.value);
     const textReq = document.getElementById('special-request').value.trim();
