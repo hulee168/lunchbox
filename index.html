@@ -159,9 +159,9 @@
     </div>
 
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-      <button onclick="showOrder()"
+      <button id="btn-order-home" onclick="showOrder()"
         class="order-btn text-white text-xl font-bold px-14 py-5 rounded-full inline-flex items-center space-x-3">
-        <span class="text-2xl">🛒</span><span>立即訂便當</span>
+        <span class="text-2xl">🛒</span><span id="btn-order-home-label">立即訂便當</span>
       </button>
       <button onclick="showSummary()"
         class="stats-btn text-white text-xl font-bold px-14 py-5 rounded-full inline-flex items-center space-x-3">
@@ -169,6 +169,9 @@
       </button>
     </div>
     <p class="text-center text-gray-400 text-sm mt-4" id="home-order-hint">目前尚未有人訂餐</p>
+    <p class="text-center text-sm mt-2 font-semibold text-gray-500" id="order-time-notice">
+      <span id="clock-now"></span><span class="text-gray-400 font-normal">・每日訂餐截止時間 09:50</span>
+    </p>
   </main>
   <footer class="text-center py-8 text-gray-400 text-sm">
     <p>© 2026 給力盒子 · 健康均衡每一餐</p>
@@ -183,6 +186,11 @@
 <!-- ══════════ 訂單頁 ══════════ -->
 <div id="view-order" class="view">
   <main class="max-w-5xl mx-auto px-6 py-8 pb-40">
+
+    <!-- 訂餐截止提示 -->
+    <div id="order-closed-banner" class="hidden bg-red-50 border-2 border-red-300 text-red-600 rounded-2xl p-4 mb-6 text-center font-semibold">
+      ⏰ 今日訂餐已於 09:50 截止，請於明天再訂購！
+    </div>
 
     <!-- 訂購人資訊 -->
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
@@ -605,7 +613,7 @@
         <p class="text-gray-500 text-sm">總計金額</p>
         <p class="text-3xl font-extrabold text-orange-500">$<span id="total-price">0</span></p>
       </div>
-      <button class="submit-btn text-white text-lg font-bold px-10 py-4 rounded-full inline-flex items-center space-x-2" onclick="submitOrder()">
+      <button id="btn-submit-order" class="submit-btn text-white text-lg font-bold px-10 py-4 rounded-full inline-flex items-center space-x-2" onclick="submitOrder()">
         <span>送出訂單</span>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -754,6 +762,52 @@
     if (currentView === 'summary') renderSummary();
   });
 
+  // ── 訂餐截止時間控制（每日 09:50 後關閉訂餐）──
+  const ORDER_CUTOFF_HOUR = 9;
+  const ORDER_CUTOFF_MIN = 50;
+
+  function isOrderClosed() {
+    const now = new Date();
+    const cutoff = new Date(now);
+    cutoff.setHours(ORDER_CUTOFF_HOUR, ORDER_CUTOFF_MIN, 0, 0);
+    return now >= cutoff;
+  }
+
+  function pad2(n) { return n.toString().padStart(2, '0'); }
+
+  function refreshOrderClock() {
+    const now = new Date();
+    const closed = isOrderClosed();
+
+    const clockEl = document.getElementById('clock-now');
+    if (clockEl) clockEl.textContent = `⏰ 現在時間 ${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
+
+    const noticeEl = document.getElementById('order-time-notice');
+    if (noticeEl) noticeEl.classList.toggle('text-red-500', closed);
+
+    const homeBtn = document.getElementById('btn-order-home');
+    const homeLabel = document.getElementById('btn-order-home-label');
+    if (homeBtn && homeLabel) {
+      homeBtn.classList.toggle('opacity-50', closed);
+      homeBtn.classList.toggle('cursor-not-allowed', closed);
+      homeBtn.classList.toggle('pointer-events-none', closed);
+      homeLabel.textContent = closed ? '今日已截止訂餐' : '立即訂便當';
+    }
+
+    const banner = document.getElementById('order-closed-banner');
+    if (banner) banner.classList.toggle('hidden', !closed);
+
+    const submitBtn = document.getElementById('btn-submit-order');
+    if (submitBtn) {
+      submitBtn.disabled = closed;
+      submitBtn.classList.toggle('opacity-50', closed);
+      submitBtn.classList.toggle('cursor-not-allowed', closed);
+    }
+  }
+
+  refreshOrderClock();
+  setInterval(refreshOrderClock, 1000);
+
   // ── View 切換 ──
   let prevView = 'home';
 
@@ -769,6 +823,10 @@
   }
 
   function showOrder() {
+    if (isOrderClosed()) {
+      alert('⏰ 今日訂餐已於 09:50 截止，請於明天再訂購！');
+      return;
+    }
     prevView = 'home';
     resetForm();
     switchView('order');
@@ -831,6 +889,10 @@
   }
 
   function submitOrder() {
+    if (isOrderClosed()) {
+      alert('⏰ 今日訂餐已於 09:50 截止，請於明天再訂購！');
+      return;
+    }
     const nameEl = document.getElementById('orderer-name');
     const name = nameEl.value.trim();
     if (!name) {
