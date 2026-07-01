@@ -149,7 +149,11 @@
 <!-- ══════════ 首頁 ══════════ -->
 <div id="view-home" class="view active fade-in">
   <main class="max-w-5xl mx-auto px-6 py-10">
-    <div class="text-center mb-8">
+    <div class="relative text-center mb-8">
+      <div class="absolute right-0 top-0 text-right text-xs sm:text-sm font-semibold text-gray-500" id="order-time-notice">
+        <div id="clock-now"></div>
+        <div class="text-gray-400 font-normal">每日訂餐截止 09:50</div>
+      </div>
       <h2 class="text-3xl font-extrabold text-gray-800 mb-2">本月菜單</h2>
       <p class="text-gray-500">點擊「立即訂便當」開始選購，或查看團體訂購統計</p>
     </div>
@@ -169,9 +173,6 @@
       </button>
     </div>
     <p class="text-center text-gray-400 text-sm mt-4" id="home-order-hint">目前尚未有人訂餐</p>
-    <p class="text-center text-sm mt-2 font-semibold text-gray-500" id="order-time-notice">
-      <span id="clock-now"></span><span class="text-gray-400 font-normal">・每日訂餐截止時間 09:50</span>
-    </p>
   </main>
   <footer class="text-center py-8 text-gray-400 text-sm">
     <p>© 2026 給力盒子 · 健康均衡每一餐</p>
