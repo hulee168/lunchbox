@@ -150,10 +150,6 @@
 <div id="view-home" class="view active fade-in">
   <main class="max-w-5xl mx-auto px-6 py-10">
     <div class="relative text-center mb-8">
-      <div class="absolute right-0 top-0 text-right text-xs sm:text-sm font-semibold text-gray-500 order-time-notice">
-        <div class="clock-now"></div>
-        <div class="text-gray-400 font-normal">每日訂餐截止 09:50</div>
-      </div>
       <h2 class="text-3xl font-extrabold text-gray-800 mb-2">本月菜單</h2>
       <p class="text-gray-500">點擊「立即訂便當」開始選購，或查看團體訂購統計</p>
     </div>
@@ -187,19 +183,6 @@
 <!-- ══════════ 訂單頁 ══════════ -->
 <div id="view-order" class="view">
   <main class="max-w-5xl mx-auto px-6 py-8 pb-40">
-
-    <!-- 時間提示 -->
-    <div class="flex justify-end mb-2">
-      <div class="text-right text-xs sm:text-sm font-semibold text-gray-500 order-time-notice">
-        <div class="clock-now"></div>
-        <div class="text-gray-400 font-normal">每日訂餐截止 09:50</div>
-      </div>
-    </div>
-
-    <!-- 訂餐截止提示 -->
-    <div id="order-closed-banner" class="hidden bg-red-50 border-2 border-red-300 text-red-600 rounded-2xl p-4 mb-6 text-center font-semibold">
-      ⏰ 今日訂餐已於 09:50 截止，請於明天再訂購！
-    </div>
 
     <!-- 訂購人資訊 -->
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
@@ -373,6 +356,22 @@
               </div>
             </div>
           </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="宮保辣子丁" data-price="125">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="font-bold text-gray-800 text-lg">🥜 宮保辣子丁</p>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded-full text-white" style="background:linear-gradient(135deg,#f59e0b,#d97706);">📅 8月限定</span>
+                </div>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$125</span>
+              </div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -526,6 +525,22 @@
           <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="南加州火烤雞胸(單點)" data-price="65">
             <div class="flex items-center justify-between">
               <div class="flex-1"><p class="font-bold text-gray-800 text-lg">南加州火烤雞胸</p><span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$65</span></div>
+              <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
+                <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
+                <button class="qty-btn text-gray-600" onclick="changeQty(this,1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="menu-card bg-gray-50 rounded-xl p-4 category-chicken" data-name="宮保辣子丁(單點)" data-price="65">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="font-bold text-gray-800 text-lg">🥜 宮保辣子丁</p>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded-full text-white" style="background:linear-gradient(135deg,#f59e0b,#d97706);">📅 8月限定</span>
+                </div>
+                <span class="price-tag text-sm font-semibold px-2 py-0.5 rounded-full">$65</span>
+              </div>
               <div class="flex items-center space-x-2 bg-white rounded-full px-3 py-1 border border-gray-200">
                 <button class="qty-btn text-gray-600" onclick="changeQty(this,-1)">−</button>
                 <input class="qty-input" type="number" value="0" min="0" max="20" onchange="updateTotal()">
@@ -751,53 +766,6 @@
     if (currentView === 'summary') renderSummary();
   });
 
-  // ── 訂餐截止時間控制（每日 09:50 後關閉訂餐）──
-  const ORDER_CUTOFF_HOUR = 9;
-  const ORDER_CUTOFF_MIN = 50;
-
-  function isOrderClosed() {
-    const now = new Date();
-    const cutoff = new Date(now);
-    cutoff.setHours(ORDER_CUTOFF_HOUR, ORDER_CUTOFF_MIN, 0, 0);
-    return now >= cutoff;
-  }
-
-  function pad2(n) { return n.toString().padStart(2, '0'); }
-
-  function refreshOrderClock() {
-    const now = new Date();
-    const closed = isOrderClosed();
-
-    document.querySelectorAll('.clock-now').forEach(clockEl => {
-      clockEl.textContent = `⏰ 現在時間 ${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
-    });
-
-    document.querySelectorAll('.order-time-notice').forEach(noticeEl => {
-      noticeEl.classList.toggle('text-red-500', closed);
-    });
-
-    const homeBtn = document.getElementById('btn-order-home');
-    const homeLabel = document.getElementById('btn-order-home-label');
-    if (homeBtn && homeLabel) {
-      homeBtn.classList.toggle('opacity-50', closed);
-      homeBtn.classList.toggle('cursor-not-allowed', closed);
-      homeBtn.classList.toggle('pointer-events-none', closed);
-      homeLabel.textContent = closed ? '今日已截止訂餐' : '立即訂便當';
-    }
-
-    const banner = document.getElementById('order-closed-banner');
-    if (banner) banner.classList.toggle('hidden', !closed);
-
-    const submitBtn = document.getElementById('btn-submit-order');
-    if (submitBtn) {
-      submitBtn.disabled = closed;
-      submitBtn.classList.toggle('opacity-50', closed);
-      submitBtn.classList.toggle('cursor-not-allowed', closed);
-    }
-  }
-
-  refreshOrderClock();
-  setInterval(refreshOrderClock, 1000);
 
   // ── View 切換 ──
   let prevView = 'home';
@@ -814,10 +782,6 @@
   }
 
   function showOrder() {
-    if (isOrderClosed()) {
-      alert('⏰ 今日訂餐已於 09:50 截止，請於明天再訂購！');
-      return;
-    }
     prevView = 'home';
     resetForm();
     switchView('order');
@@ -880,10 +844,6 @@
   }
 
   function submitOrder() {
-    if (isOrderClosed()) {
-      alert('⏰ 今日訂餐已於 09:50 截止，請於明天再訂購！');
-      return;
-    }
     const nameEl = document.getElementById('orderer-name');
     const name = nameEl.value.trim();
     if (!name) {
