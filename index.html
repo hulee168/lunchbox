@@ -173,7 +173,6 @@
         <span class="text-2xl">📊</span><span>查看訂購統計</span>
       </button>
     </div>
-    <p class="text-center text-gray-400 text-sm mt-4" id="home-order-hint">目前尚未有人訂餐</p>
   </main>
   <footer class="text-center py-8 text-gray-400 text-sm">
     <p>© 2026 給力盒子 · 健康均衡每一餐</p>
@@ -797,7 +796,6 @@
     const val = snapshot.val() || {};
     ordersCache = Object.entries(val).map(([key, order]) => ({ ...order, firebaseKey: key }));
     document.getElementById('badge-count').textContent = ordersCache.length;
-    updateHomeHint();
     if (currentView === 'summary') renderSummary();
   });
 
@@ -892,7 +890,6 @@
     document.getElementById('home-badge').classList.remove('hidden');
     document.getElementById('order-count-badge').classList.add('hidden');
     document.getElementById('header-subtitle').textContent = '健康美味的便當選擇';
-    updateHomeHint();
   }
 
   // ── 訂單頁邏輯 ──
@@ -1181,18 +1178,6 @@
     }
   });
 
-  function updateHomeHint() {
-    const hint = document.getElementById('home-order-hint');
-    if (ordersCache.length === 0) {
-      hint.textContent = '目前尚未有人訂餐';
-      hint.classList.remove('text-indigo-500');
-      hint.classList.add('text-gray-400');
-    } else {
-      hint.textContent = `已有 ${ordersCache.length} 人完成訂餐`;
-      hint.classList.add('text-indigo-500');
-      hint.classList.remove('text-gray-400');
-    }
-  }
 </script>
 
 </body>
